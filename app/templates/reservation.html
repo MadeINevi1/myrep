@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Бронирование столика{% endblock %}
+
+{% block content %}
+    <h2>Бронирование столика</h2>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.restaurant.label(class="form-label") }}
+            {{ form.restaurant(class="form-select") }}
+        </div>
+        <div class="mb-3">
+            {{ form.reservation_date.label(class="form-label") }}
+            {{ form.reservation_date(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.reservation_time.label(class="form-label") }}
+            {{ form.reservation_time(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.guests_count.label(class="form-label") }}
+            {{ form.guests_count(class="form-control") }}
+        </div>
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+{% endblock %}

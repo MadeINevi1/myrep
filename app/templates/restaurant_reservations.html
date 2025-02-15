@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Бронирования ресторана{% endblock %}
+
+{% block content %}
+    <h2>Бронирования ресторана</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Клиент</th>
+                <th>Дата</th>
+                <th>Время</th>
+                <th>Количество гостей</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reservation in reservations %}
+                <tr>
+                    <td>{{ reservation.reservation_id }}</td>
+                    <td>{{ reservation.full_name }}</td>
+                    <td>{{ reservation.reservation_date }}</td>
+                    <td>{{ reservation.reservation_time }}</td>
+                    <td>{{ reservation.guests_count }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if not reservations %}
+        <p>Нет бронирований.</p>
+    {% endif %}
+{% endblock %}

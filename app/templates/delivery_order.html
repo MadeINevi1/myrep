@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Оформление заказа{% endblock %}
+
+{% block content %}
+    <h2>Оформление заказа</h2>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.restaurant.label(class="form-label") }}
+            {{ form.restaurant(class="form-select") }}
+        </div>
+        <div class="mb-3">
+            {{ form.delivery_address.label(class="form-label") }}
+            {{ form.delivery_address(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.dishes.label(class="form-label") }}
+            {{ form.dishes(class="form-select", multiple=True) }}
+        </div>
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+{% endblock %}

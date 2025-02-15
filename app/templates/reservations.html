@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Мои бронирования{% endblock %}
+
+{% block content %}
+    <h2>Мои бронирования</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Ресторан</th>
+                <th>Дата</th>
+                <th>Время</th>
+                <th>Количество гостей</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reservation in reservations %}
+                <tr>
+                    <td>{{ reservation.reservation_id }}</td>
+                    <td>{{ reservation.restaurant }}</td>
+                    <td>{{ reservation.reservation_date }}</td>
+                    <td>{{ reservation.reservation_time }}</td>
+                    <td>{{ reservation.guests_count }}</td>
+                    <td>
+                        <a href="{{ url_for('cancel_reservation', reservation_id=reservation.reservation_id) }}" class="btn btn-danger btn-sm">Отменить</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if not reservations %}
+        <p>У вас нет бронирований.</p>
+    {% endif %}
+{% endblock %}
