@@ -1,5 +1,6 @@
 from datetime import datetime
 from app.db import get_db_connection, close_db_connection
+import hashlib  # Для хеширования паролей
 
 class User:
     def __init__(self, id, username, role, full_name=None, contact_phone=None, email=None):
@@ -11,7 +12,6 @@ class User:
         self.email = email
 
     # ------------------------- Методы для клиента -------------------------
-
     def get_reservations(self):
         """Получить все бронирования клиента."""
         conn = get_db_connection()
@@ -88,7 +88,6 @@ class User:
         return False
 
     # ------------------------- Методы для администратора ресторана -------------------------
-
     def get_restaurant_reservations(self, restaurant_id):
         """Получить все бронирования для ресторана."""
         if self.role != 'admin':
@@ -121,7 +120,6 @@ class User:
                     RETURNING dish_id;
                 """, (name, description, price))
                 dish_id = cur.fetchone()[0]
-
                 cur.execute("""
                     INSERT INTO menu_availability (restaurant_id, dish_id) 
                     VALUES (%s, %s);
@@ -137,7 +135,6 @@ class User:
         return None
 
     # ------------------------- Методы для оператора доставки -------------------------
-
     def get_pending_orders(self):
         """Получить все заказы, ожидающие доставки."""
         if self.role != 'delivery_operator':
@@ -180,8 +177,56 @@ class User:
                 close_db_connection(conn)
         return False
 
-# ------------------------- Вспомогательные функции -------------------------
+    # ------------------------- Методы аутентификации -------------------------
+    @staticmethod
+    def hash_password(password):
+        """Хеширование пароля."""
+        return hashlib.sha256(password.encode()).hexdigest()
 
+    def check_password(self, password):
+        """Проверка пароля."""
+        conn = get_db_connection()
+        if conn:
+            cur = conn.cursor()
+            cur.execute("SELECT password FROM users WHERE user_id = %s", (self.id,))
+            result = cur.fetchone()
+            close_db_connection(conn)
+            if result and result[0] == self.hash_password(password):
+                return True
+        return False
+
+    @staticmethod
+    def register_user(username, password, role, full_name=None, contact_phone=None, email=None):
+        """Регистрация нового пользователя."""
+        hashed_password = User.hash_password(password)
+        conn = get_db_connection()
+        if conn:
+            cur = conn.cursor()
+            try:
+                cur.execute("""
+                    INSERT INTO users (username, password, role) 
+                    VALUES (%s, %s, %s) RETURNING user_id;
+                """, (username, hashed_password, role))
+                user_id = cur.fetchone()[0]
+
+                if role == 'client':
+                    cur.execute("""
+                        INSERT INTO clients (client_id, full_name, contact_phone, email) 
+                        VALUES (%s, %s, %s, %s);
+                    """, (user_id, full_name, contact_phone, email))
+
+                conn.commit()
+                return get_user_by_id(user_id)
+            except Exception as e:
+                print(f"Ошибка при регистрации: {e}")
+                conn.rollback()
+                return None
+            finally:
+                close_db_connection(conn)
+        return None
+
+
+# ------------------------- Вспомогательные функции -------------------------
 def get_user_by_id(user_id):
     """Получить пользователя по ID."""
     conn = get_db_connection()
@@ -195,7 +240,6 @@ def get_user_by_id(user_id):
         """, (user_id,))
         user_data = cur.fetchone()
         close_db_connection(conn)
-
         if user_data:
             return User(
                 id=user_data[0],
@@ -206,6 +250,7 @@ def get_user_by_id(user_id):
                 email=user_data[5]
             )
     return None
+
 
 def get_user_by_username(username):
     """Получить пользователя по имени пользователя."""
@@ -220,7 +265,6 @@ def get_user_by_username(username):
         """, (username,))
         user_data = cur.fetchone()
         close_db_connection(conn)
-
         if user_data:
             return User(
                 id=user_data[0],
